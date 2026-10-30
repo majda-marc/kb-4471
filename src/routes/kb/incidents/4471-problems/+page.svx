@@ -23,8 +23,9 @@ describe separate problems. Each one has a different fix, so each one gets its o
 
 <ProblemTable ticket={4471} {repo} {issues} />
 
-This table counts the `one-day` reports apart from `parser`. The table on the #4471 page files
-them under `parser`, because it goes by the tenant's locale alone.
+This table counts as the desk counts, like the table on the #4471 page: each report is filed under
+its tenant's cause. The reports the desk read as one-day moves stay filed under `parser`, so the
+`parser` row counts them as well as the `one-day` row.
 
 <Callout kind="warn">
 A fix for one row does not close the others. Keep #4471 for the problem it was written for.

@@ -14,12 +14,12 @@
 
   const merged = $derived(uniqueById(reports as Report[]).filter((r) => r.mergedInto === ticket));
   const repeated = $derived((reports as Report[]).filter((r) => r.mergedInto === ticket).length - merged.length);
-  // The desk read these as one-day moves, not a flipped month. causes.ts files them by tenant, under parser.
-  const isOneDay = (r: Report) => notes.oneDayMove.includes(r.id);
+  // The desk files these by tenant (causes.ts) although it read them as one-day moves, so they count twice here.
+  const oneDay = $derived(merged.filter((r) => notes.oneDayMove.includes(r.id)));
   const problems = $derived(
     [
-      ...groupByCause(merged.filter((r) => !isOneDay(r)), tenantOf).map((g) => ({ name: g.cause as string, ...stats(g.reports) })),
-      ...(merged.some(isOneDay) ? [{ name: 'one-day', ...stats(merged.filter(isOneDay)) }] : []),
+      ...groupByCause(merged, tenantOf).map((g) => ({ name: g.cause as string, ...stats(g.reports) })),
+      ...(oneDay.length ? [{ name: 'one-day', ...stats(oneDay) }] : []),
     ].sort((a, b) => b.count - a.count),
   );
 </script>
@@ -52,6 +52,10 @@
     {/each}
   </tbody>
 </table>
+
+{#if oneDay.length}
+  <p class="note">{oneDay.length} reports read as a one-day move. The desk files every report under its tenant's cause, so they are counted in that row and again in the one-day row.</p>
+{/if}
 
 {#if repeated}
   <p class="note">{repeated} rows in the export repeat a report already counted. Each report is counted once, by id.</p>
