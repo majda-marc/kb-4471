@@ -1,0 +1,66 @@
+---
+layout: runbook
+title: '#4471 · one ticket, several problems'
+owner: support desk
+status: open
+reviewed: 2026-10-30
+signature: v1.eyJzdWIiOiI1NDI5IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMzODMyNzcsImV4cCI6MTc5MzQ2OTY3N30.AJLzMzJ5gU3NwIZf35z3uMNg5UQkzXnjVVFiYOL14jQ
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/majda-marc/kb-4471';
+  const issues = { parser: 1, hint: 2, 'one-day': 3 };
+</script>
+
+[#4471](/kb/incidents/4471) was merged as one issue and marked known. The reports under it
+describe separate problems. Each one has a different fix, so each one gets its own ticket.
+
+## What the reports show
+
+<ProblemTable ticket={4471} {repo} {issues} />
+
+This table counts the `one-day` reports apart from `parser`. The table on the #4471 page files
+them under `parser`, because it goes by the tenant's locale alone.
+
+<Callout kind="warn">
+A fix for one row does not close the others. Keep #4471 for the problem it was written for.
+</Callout>
+
+## parser: dates are read month first
+
+The shared parser reads every date month first. A tenant whose locale writes the day first gets
+flipped dates: a booking for 7 April arrives as 4 July. This is the problem #4471 was written
+for, and its fix is the one already queued.
+
+## hint: the booking-v3 form asks for the wrong order
+
+Booking-v3 prints MM/DD/YYYY under its date field. People at a day-first tenant type what it
+says, and the form reads it the tenant's way, so the date flips. A parser fix does not reach
+this: the form's hint is wrong, not the parser. Only reports that came through the form, at a
+tenant that runs booking-v3, belong here.
+
+## one-day: dates land one day off
+
+These reports describe a date that moved by one day. A flipped month cannot do that. The desk
+read them as one-day moves (`desk-notes.json`), and the kb files them under `parser` only
+because of the tenant's locale. The cause is not confirmed. One report puts a client in Lisbon
+and a client in Toronto on different days for the same meeting, which points at time zones.
+Engineering has to reproduce it first.
+
+## How the reports were counted
+
+- Each report is counted once, by id.
+- The problem comes from the tenant's locale and booking form, as in `causes.ts`.
+- Intake's tag is a guess from the reporter's browser, so it is not used.
+
+## Why one ticket held them all
+
+The desk merges on subject line alone ([decision 0001](/kb/decisions/0001-dedupe-by-subject)).
+The same subjects, such as "Wrong day on the invite", come in for every problem above, so one
+rule put all of them into one ticket.
+
+<RenderStamp {signature} />
